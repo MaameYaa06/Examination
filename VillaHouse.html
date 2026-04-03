@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Villa House </title>
+    <script src="aframe.min.js"></script>
+    <script>
+    AFRAME.registerComponent('model-color', {
+    schema: {
+       color: {type: 'color'}
+    },
+    init: function() {
+       this.el.addEventListener('model-loaded', this.applyColor.bind(this));
+    },
+    applyColor: function() {
+      var color = new THREE.Color(this.data.color);
+      this.el.object3D.traverse(function(node) {
+          if (!node.isMesh || !node.material) {
+            return;
+                }
+          if (Array.isArray(node.material)) {
+            node.material = node.material.map(function(material) {
+            var cloned = material.clone();
+          if (cloned.color) {
+            cloned.color.copy(color);
+            }
+            return cloned;
+            });
+            return;
+            }
+            node.material = node.material.clone();
+         if (node.material.color) {
+            node.material.color.copy(color);
+            }
+            });
+        }
+    });
+    window.addEventListener('load', function() {
+        var waterVideo = document.querySelector('#water');
+        var mansion = document.querySelector('#mansionEntity');
+        var sceneContent = document.querySelector('#sceneContent');
+        var loadingOverlay = document.querySelector('#loadingOverlay');
+        if (mansion && sceneContent) {
+            mansion.addEventListener('model-loaded', function() {
+                sceneContent.setAttribute('visible', true);
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
+        // Show controls UI after loading
+        var controlsUI = document.querySelector('#controlsUI');
+        if (controlsUI) {
+            controlsUI.style.display = 'block';
+        }
+        if (waterVideo) {
+            waterVideo.play().catch(function() {});
+            document.body.addEventListener('click', function() {
+            waterVideo.play().catch(function() {});
+        }, { once: true });
+     }
+        }, { once: true });
+        }
+    });
+      AFRAME.registerComponent('floor-controller', {
+      schema: {
+        groundFloorY: { type: 'number', default: 2 },
+        topFloorY: { type: 'number', default: 12 },
+        upKey: { type: 'string', default: 'KeyU' },
+        downKey: { type: 'string', default: 'KeyD' }
+      },
+      init: function() {
+        this.isTopFloor = false;
+        this.handleKeyDown = this.handleKeyDown.bind(this);
+        window.addEventListener('keydown', this.handleKeyDown);
+      },
+      handleKeyDown: function(event) {
+        if (event.code === this.data.upKey) {
+          this.goToTopFloor();
+        } else if (event.code === this.data.downKey) {
+          this.goToGroundFloor();
+        }
+      },
+      goToTopFloor: function() {
+        if (!this.isTopFloor) {
+          var pos = this.el.getAttribute('position');
+          pos.y = this.data.topFloorY;
+          this.el.setAttribute('position', pos);
+          this.isTopFloor = true;
+          console.log('Moved to Top Floor');
+        }
+      },
+      goToGroundFloor: function() {
+        if (this.isTopFloor) {
+          var pos = this.el.getAttribute('position');
+          pos.y = this.data.groundFloorY;
+          this.el.setAttribute('position', pos);
+          this.isTopFloor = false;
+          console.log('Moved to Ground Floor');
+        }
+      },
+      remove: function() {
+        window.removeEventListener('keydown', this.handleKeyDown);
+      }
+    });
+    </script>
+</head>
+<body>
+    <div id="loadingOverlay" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(7, 16, 24, 0.88); color: #F5F1E8; font-family: Arial, sans-serif; font-size: 24px; letter-spacing: 0.08em; z-index: 10;">
+        Loading villa scene...</div>
+
+    <!-- Controls-->
+    <div id="controlsUI" style="position: fixed; top: 20px; right: 20px; background: rgba(0, 0, 0, 0.7); color: white; padding: 15px; border-radius: 8px; font-family: Arial, sans-serif; font-size: 14px; z-index: 5; display: none;">
+        <div>Press <span style="background: #333; padding: 2px 6px; border-radius: 3px; font-weight: bold;">U</span> to go to Top Floor</div>
+        <div>Press <span style="background: #333; padding: 2px 6px; border-radius: 3px; font-weight: bold;">D</span> to go to Ground Floor</div>
+    </div>
+    <a-scene>
+        <a-assets>
+          <img id="floor" src="assets/textures/Road012A_1K-JPG_Color.jpg"></img>
+          <img id="morningSkyTexture" src="assets/textures/MorningSkyHDRI007A_1K_TONEMAPPED.jpg"></img>
+          <a-asset-item id="mansion" src="assets/models/modern_luxury_villa_house_building_home.glb"></a-asset-item>
+          <a-asset-item id="redCarModel" src="assets/models/Red Car.glb"></a-asset-item>
+          <a-asset-item id="sportsCarModel" src="assets/models/Sports Car.glb"></a-asset-item>
+          <a-asset-item id="vanModel" src="assets/models/Van.glb"></a-asset-item>
+          <a-asset-item id="doorModel" src="assets/models/Door.glb"></a-asset-item>
+          <a-asset-item id="doorModel1" src="assets/models/Door (1).glb"></a-asset-item>
+          <a-asset-item id="flowersModel" src="assets/models/Flowers.glb"></a-asset-item>
+          <a-asset-item id="couchModel" src="assets/models/Couch Large.glb"></a-asset-item>
+          <a-asset-item id="cactusModel" src="assets/models/Succulent 02.glb"></a-asset-item>
+          <a-asset-item id="stairsModel" src="assets/models/Stairs Sides.glb"></a-asset-item>
+          <a-asset-item id="coffeeTable" src="assets/models/Coffee Table.glb"></a-asset-item>
+          <a-asset-item id="tvStandModel" src="assets/models/Cabinet Television Doo.glb"></a-asset-item>
+          <a-asset-item id="beanBagModel" src="assets/models/Bean Bag.glb"></a-asset-item>
+          <a-asset-item id="BagModel" src="assets/models/Bags.glb"></a-asset-item>
+          <a-asset-item id="tvModel" src="assets/models/TV.glb"></a-asset-item>
+          <a-asset-item id="table1" src="assets/models/Drafting Table.glb"></a-asset-item>
+          <a-asset-item id="table2" src="assets/models/Desk.glb"></a-asset-item>
+          <a-asset-item id="kitchenFridgeModel" src="assets/models/Kitchen Fridge.glb"></a-asset-item>
+          <a-asset-item id="coolerModel" src="assets/models/Cooler Box.glb"></a-asset-item>
+          <a-asset-item id="kitchen" src="assets/models/Fridge and Cooker.glb"></a-asset-item>
+          <a-asset-item id="dining" src="assets/models/dining_table_set.glb"></a-asset-item>
+          <a-asset-item id="bedModel" src="assets/models/Double Bed.glb"></a-asset-item>
+          <a-asset-item id="lightstand" src="assets/models/Light Stand.glb"></a-asset-item>
+          <a-assets-item id="closet" src="assets/models/Large Wardrobe.glb"></a-asset-item>
+          <a-assets-item id="shelf" src="assets/models/shelf.glb"></a-assets-item>
+          <a-assets-item id="bathtub" src="assets/models/Bathtub.glb"></a-assets-item>
+          <a-assets-item id="towel" src="assets/models/Towel Rack.glb"></a-assets-item>
+          <a-assets-item id="toilet1" src="assets/models/Toilet1.glb"></a-assets-item>
+          <a-assets-item id="washer" src="assets/models/Washer.glb"></a-assets-item>
+          <a-assets-item id="dryer" src="assets/models/Dryer.glb"></a-assets-item>
+          <a-assets-item id="cot" src="assets/models/Cot.glb"></a-assets-item>
+          <a-asset-item id="hanger" src="assets/models/The Bedroom - Hanger 2 AB1E.glb"></a-asset-item>
+          <a-asset-item id="picnic" src="assets/models/Picnic Table.glb"></a-asset-item>
+          <a-asset-item id="cabinet" src="assets/models/Butch's Place - Cabinets.glb"></a-asset-item>
+          <a-assets-item id="kitdrawer" src="assets/models/KitchenDrawer.glb"></a-asset-item>
+          <a-assets-item id="dog" src="assets/models/Doberman.glb"></a-assets-item>
+          <video id="water" src="assets/textures/9507847-sd_426_226_30fps.mp4" loop="true" muted playsinline webkit-playsinline preload="metadata"></video>
+        </a-assets>
+
+        <a-entity id="sceneContent" visible="false">
+            <!-- Mansion-->
+            <a-entity 
+                id="mansionEntity"
+                gltf-model="#mansion" 
+                position="5 0.3 16" 
+                scale="3 3 3">
+            </a-entity>
+
+           <!-- Parked Car 1 -->
+            <a-entity
+                id="parkedCar"
+                gltf-model="#redCarModel"
+                position="132 1.75 -21"
+                rotation="0 180 0"
+                scale="6 5 6">
+            </a-entity>
+
+            <!-- Parked Car 2 -->
+            <a-entity
+                id="parkedCar2"
+                gltf-model="#sportsCarModel"
+                position="140 0.45 -20.5"
+                rotation="0 0 0"
+                scale="2 2 2">
+            </a-entity>
+
+            <!-- Parked Car 3 -->
+            <a-entity
+                id="parkedCar3"
+                gltf-model="#vanModel"
+                position="148 0.45 -20.5"
+                rotation="0 0 0"
+                scale="0.15 0.125 0.15">
+            </a-entity>
+
+            <!-- Door 1 -->
+            <a-entity
+                id="frontDoor"
+                gltf-model="#doorModel"
+                position="112.55 0.41 -33"
+                rotation="0 180 0"
+                scale="4 2.5 3">
+            </a-entity>
+
+            <!-- Door 2 -->
+            <a-entity
+                id="backDoor"
+                gltf-model="#doorModel1"
+                position="112.35 2 -50"
+                rotation="0 180 0"
+                scale="4.2 2 2.5">
+            </a-entity>
+
+            <!-- Flowers -->
+            <a-entity id="frontFlowers" gltf-model="#flowersModel" position="109 0.3 -19" rotation="0 180 0" scale="3.5 3.5 2.2"></a-entity>
+            <a-entity id="frontFlowers2" gltf-model="#flowersModel" position="100 0.3 -19" rotation="0 180 0" scale="3.5 3.5 2.2"></a-entity>
+            <a-entity id="frontFlowers3" gltf-model="#flowersModel" position="91 0.3 -19" rotation="0 180 0" scale="3.5 3.5 2.2"></a-entity>
+
+            <!-- Dog -->
+            <a-entity id="dog" gltf-model="#dog" position="93 0.4 -22.5" rotation="0 -90 0" scale="0.01 0.01 0.01"
+                animation="property: position; from: 90 0.4 -22.5; to: 100 0.4 -22.5; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"></a-entity>
+
+            <!-- Living room  -->
+            <a-entity id="frontCouch" gltf-model="#couchModel" position="99 2.5 -35" rotation="0 180 0" scale="1.5 1.5 1"></a-entity>
+            <a-entity id="frontCouch2" gltf-model="#couchModel" position="95 2.5 -42.5" rotation="0 90 0" scale="1.5 1.5 1"></a-entity>
+            <a-entity id="cactusPlant" gltf-model="#cactusModel" position="109 4 -36" rotation="0 -30 0" scale="7 7 7"></a-entity>
+            <a-entity id="cactusPlant1" gltf-model="#cactusModel" position="108 4.5 -38" rotation="0 -30 0" scale="10 10 10"></a-entity>
+            <a-entity id="cactusPlant2" gltf-model="#cactusModel" position="108 3.5 -36.5" rotation="0 -30 0" scale="5 5 5"></a-entity>
+            <a-entity id="coffeetable" gltf-model="#coffeeTable" position="100 3 -43" rotation="0 90 0" scale="3 3 3"></a-entity>
+            <a-entity id="tvStandEntity" gltf-model="#tvStandModel" position="109 2.2 -49" rotation="0 90 0" scale="7.5 7.5 7.5"></a-entity>
+            <a-entity id="tv" gltf-model="#tvModel" position="110 4.5 -46" rotation="0 -90 0" scale="0.4 0.4 0.4"></a-entity>
+
+            <!--Leisure area-->
+            <a-entity id="beanBag" gltf-model="#beanBagModel" position="109.5 2.3 -76" rotation="0 -30 0" scale="3 3 3"></a-entity>
+            <a-entity id="beanBag1" gltf-model="#beanBagModel" position="105 2.3 -76" rotation="0 30 0" scale="3 3 3"></a-entity>
+            <a-entity id="pillows" gltf-model="#BagModel" position="107.5 2.3 -73" rotation="0 0 0" scale="10 10 10" model-color="color: #FFDF20"></a-entity>
+            <a-entity id="table" gltf-model="#table1" position="98 4.3 -67" rotation="0 180 0" scale="0.9 0.9 0.9 "></a-entity>
+            <a-entity id="officetable" gltf-model="#table2" position="94 2.5 -66" rotation="0 180 0" scale="2 2 2"></a-entity>
+            
+            <!--Dining room-->
+            <a-entity id="kitchenFridge" gltf-model="#kitchenFridgeModel" position="137.5 2 -44" rotation="0 -90 0" scale="2 2.2 2"></a-entity>
+            <a-entity id="coolerBox" gltf-model="#coolerModel" position="135.95 3.5 -51.95" rotation="0 0 0" scale="0.25 0.2 0.2"></a-entity>
+            <a-entity id="diningtable" gltf-model="#dining" position="127 2.5 -45.5" rotation="0 90 0" scale="0.01 0.01 0.01"></a-entity>
+
+            <!-- Kitchen -->
+            <a-entity id="kitchen" gltf-model="#kitdrawer" position="136.2 2 -62.5" rotation="0 90 0" scale="6 7.5 5"></a-entity>
+            <a-entity id="kitchenCabinet" gltf-model="#cabinet" position="137.5 6 -66" rotation="0 -180 0" scale="3.5 3 3.5"></a-entity>
+            <a-entity id="kitchen1" gltf-model="#kitchen" position="122 6 -65.5" rotation="0 -90 0" scale="1 1 1"></a-entity>
+
+
+            <!-- Bedroom -->
+            <a-entity id="bedroomBed" gltf-model="#bedModel" position="93 13.5 -47" rotation="0 180 0" scale="2.5 3.5 2.5"></a-entity>
+            <a-entity id="lightstand" gltf-model="#lightstand" position="97 12 -44" rotation="0 180 0" scale="1.5 1.5 1.5"></a-entity>
+            <a-entity id="closet" gltf-model="#closet" position="95.75 15 -76.75" rotation="0 0 0" scale="5 3.7 3"></a-entity>
+            <a-entity id="shelf" gltf-model="#shelf" position="107 14.2 -51.5" rotation="0 90 0" scale="3 3 1.5"></a-entity>
+            <a-entity id="bathtub" gltf-model="#bathtub" position="132 11.95 -68" rotation="0 -90 0" scale="3.5 3.5 4"></a-entity>
+            <a-entity id="towel" gltf-model="#towel" position="132 15 -70" rotation="0 -90 0" scale="2 2 2"></a-entity>
+            <a-entity id="toilet" gltf-model="#toilet1" position="131 12 -56" rotation="0 -180 0" scale="0.3 0.3 0.3"></a-entity>
+            <a-entity id="washer" gltf-model="#washer" position="124.25 11.9 -57" rotation="0 0 0" scale="6 6 6"></a-entity>
+            <a-entity id="dryer" gltf-model="#dryer" position="126.75 11.9 -57.15" rotation="0 0 0" scale="6 6.5 6"></a-entity>
+            <a-entity id="cot" gltf-model="#cot" position="105.5 12.75 -71.5" rotation="0 180 0" scale="5 2 1"></a-entity>
+            <a-entity id="hanger" gltf-model="#hanger" position="89.99 16 -71" rotation="0 -90 0" scale="5 5 5"></a-entity>
+            <a-entity id="picnic" gltf-model="#picnic" position="100 11.5 -37" rotation="0 0 0" scale="3.5 2 3"></a-entity>
+    
+            <!-- Stairs -->
+            <a-entity
+                id="stairs"
+                gltf-model="#stairsModel"
+                position="116 2 -58.5"
+                rotation="0 180 0"
+                scale="2.5 4 1">
+            </a-entity>
+
+            <!-- Pool -->
+            <a-plane
+                id="poolSurface"
+                position="130 0.25 -34"
+                rotation="-90 0 0"
+                width="18.45" height="11"
+                material="src: #water; opacity: 0.82; shader: flat; side: double">
+            </a-plane>
+        </a-entity>
+
+            <!-- Ground -->
+            <a-plane 
+                src="#floor"
+                rotation="-90 0 0"
+                width="700"
+                height="700"
+                repeat="10 10"
+                color ="#0D542B">
+            </a-plane>
+
+            <!-- Sky -->
+            <a-sky id="sceneSky" src="#morningSkyTexture"></a-sky>
+
+            <!-- Camera -->
+            <a-entity id="cameraRig" position="110 2 15" floor-controller="groundFloorY: 2; topFloorY: 12">
+            <a-entity 
+                camera 
+                position="7 5 0" 
+                rotation="-8 0 0"
+                look-controls="enabled: true"
+                wasd-controls="acceleration: 100">
+            </a-entity>
+        </a-entity>
+    </a-scene>
+  </body>
+  </html>
